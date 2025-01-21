@@ -280,74 +280,73 @@ async function checkDomain(monitor) {
 
 // 获取整体状态
 function getOverallStatus(data) {
-    // 如果安全检查通过，网站就是安全的
-    if (data.security.isSafe) {
-        // 即使有403错误，只要能访问就不算错误
-        if (data.website.accessible && data.ssl.valid && data.dns.hasRecords) {
-            return 'safe';
-        }
-        // 如果SSL证书无效或DNS记录缺失，标记为警告
-        if (!data.ssl.valid || !data.dns.hasRecords) {
-            return 'warning';
-        }
-    }
+    // 检查黑名单状态
+    const isBlacklisted = data.blacklists.surbl.listed || 
+                         data.blacklists.spamhaus.listed || 
+                         data.blacklists.mxtoolbox.listed;
     
-    // 如果安全检查未通过，标记为不安全
-    if (!data.security.isSafe) {
+    if (isBlacklisted) {
         return 'unsafe';
     }
-    
-    // 如果完全无法访问网站，标记为错误
+
+    // 检查网站可访问性和SSL证书
     if (!data.website.accessible) {
         return 'error';
     }
 
-    return 'warning';
+    if (!data.ssl.valid) {
+        return 'warning';
+    }
+
+    // 检查DNS记录
+    if (!data.dns.a?.length && !data.dns.mx?.length) {
+        return 'warning';
+    }
+
+    return 'safe';
 }
 
 // 格式化检查详情
 function formatCheckDetails(data) {
     const details = [];
 
-    // 安全检查
-    if (data.security) {
-        // 根据整体状态判断显示
-        const overallStatus = getOverallStatus(data);
-        details.push(`安全检查: ${overallStatus === 'safe' || overallStatus === 'warning' ? '✅ 安全' : '❌ 不安全'}`);
-        if (data.security.details) {
-            details.push(`安全状态: ${data.security.details}`);
+    // 黑名单检查
+    const isBlacklisted = data.blacklists.surbl.listed || 
+                         data.blacklists.spamhaus.listed || 
+                         data.blacklists.mxtoolbox.listed;
+    
+    details.push(`黑名单检查: ${!isBlacklisted ? '✅ 安全' : '❌ 不安全'}`);
+    if (data.blacklists.surbl.listed) details.push(`SURBL: ${data.blacklists.surbl.description}`);
+    if (data.blacklists.spamhaus.listed) details.push(`Spamhaus: ${data.blacklists.spamhaus.description}`);
+    if (data.blacklists.mxtoolbox.listed) details.push(`MXToolbox: ${data.blacklists.mxtoolbox.description}`);
+    
+    // SSL证书状态
+    if (data.ssl) {
+        if (data.ssl.valid) {
+            details.push(`SSL证书: ✅ 有效 (${data.ssl.issuer}, 剩余${data.ssl.daysRemaining}天)`);
+        } else {
+            details.push(`SSL证书: ❌ ${data.ssl.error || '无效'}`);
         }
-        
-        // SSL证书状态
-        if (data.ssl) {
-            if (data.ssl.valid) {
-                details.push(`SSL证书: ✅ 有效 (${data.ssl.issuer}, 剩余${data.ssl.daysRemaining}天)`);
-            } else {
-                details.push(`SSL证书: ❌ ${data.ssl.error || '无效'}`);
-            }
-        }
+    }
 
-        // 网站可访问性
-        if (data.website) {
-            if (data.website.accessible) {
-                details.push(`网站状态: ✅ 可访问 (${data.website.statusCode} ${data.website.statusMessage})`);
-            } else {
-                details.push(`网站状态: ❌ 不可访问 (${data.website.error})`);
-            }
+    // 网站可访问性
+    if (data.website) {
+        if (data.website.accessible) {
+            details.push(`网站状态: ✅ 可访问 (${data.website.protocol}, 状态码: ${data.website.statusCode})`);
+        } else {
+            details.push(`网站状态: ❌ 不可访问 (${data.website.error})`);
         }
+    }
 
-        // DNS记录
-        if (data.dns) {
-            if (data.dns.hasRecords) {
-                const records = [];
-                if (data.dns.records.a?.length) records.push(`A记录: ${data.dns.records.a.join(', ')}`);
-                if (data.dns.records.aaaa?.length) records.push(`AAAA记录: ${data.dns.records.aaaa.join(', ')}`);
-                if (data.dns.records.mx?.length) records.push(`MX记录: ${data.dns.records.mx.length}个`);
-                if (data.dns.records.txt?.length) records.push(`TXT记录: ${data.dns.records.txt.length}个`);
-                details.push(`DNS记录: ✅ ${records.join('; ')}`);
-            } else {
-                details.push(`DNS记录: ❌ ${data.dns.error || '未找到记录'}`);
-            }
+    // DNS记录
+    if (data.dns) {
+        if (data.dns.a?.length || data.dns.mx?.length) {
+            const records = [];
+            if (data.dns.a?.length) records.push(`A记录: ${data.dns.a.join(', ')}`);
+            if (data.dns.mx?.length) records.push(`MX记录: ${data.dns.mx.map(mx => mx.exchange).join(', ')}`);
+            details.push(`DNS记录: ✅ ${records.join('; ')}`);
+        } else {
+            details.push(`DNS记录: ❌ ${data.dns.error || '未找到记录'}`);
         }
     }
 
