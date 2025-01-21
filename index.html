@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>域名安全检测工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>域名安全检测工具</h1>
+            <nav>
+                <a href="monitor.html">状态监控</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="check-section">
+                <div class="input-group">
+                    <input type="text" id="domain" placeholder="输入要检测的域名">
+                    <button onclick="checkDomain()">检测</button>
+                </div>
+            </section>
+
+            <section class="result-section" id="result" style="display: none;">
+                <div class="result-header">
+                    <h2>检测结果</h2>
+                    <span class="timestamp"></span>
+                </div>
+                <div class="result-content">
+                    <div class="security-status">
+                        <h3>安全状态</h3>
+                        <div class="status-details"></div>
+                    </div>
+                    <div class="blacklist-status">
+                        <h3>黑名单检查</h3>
+                        <div class="blacklist-details"></div>
+                    </div>
+                    <div class="ssl-status">
+                        <h3>SSL证书</h3>
+                        <div class="ssl-details"></div>
+                    </div>
+                    <div class="website-status">
+                        <h3>网站状态</h3>
+                        <div class="website-details"></div>
+                    </div>
+                    <div class="dns-status">
+                        <h3>DNS记录</h3>
+                        <div class="dns-details"></div>
+                    </div>
+                </div>
+                <div class="result-actions">
+                    <button onclick="addToMonitor()">添加到监控</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>支持检测功能：Google Safe Browsing、SURBL、Spamhaus、SSL证书、DNS记录等</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

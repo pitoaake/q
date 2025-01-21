@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>域名监控 - 域名安全检测工具</title>
+    <link rel="stylesheet" href="monitor.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>域名监控</h1>
+            <p>当前监控数量: <span id="monitorCount">0</span></p>
+        </header>
+
+        <div class="monitor-mode-switch">
+            <button id="singleMonitorBtn" class="mode-btn active" onclick="switchMonitorMode('single')">单个监控</button>
+            <button id="batchMonitorBtn" class="mode-btn" onclick="switchMonitorMode('batch')">批量监控</button>
+        </div>
+
+        <section id="singleMonitorMode" class="input-section">
+            <div class="input-group">
+                <input type="text" id="monitorDomain" placeholder="输入要监控的域名">
+                <select id="checkInterval">
+                    <option value="5">每5分钟</option>
+                    <option value="15">每15分钟</option>
+                    <option value="30">每30分钟</option>
+                    <option value="60">每1小时</option>
+                    <option value="360">每6小时</option>
+                    <option value="720">每12小时</option>
+                    <option value="1440">每24小时</option>
+                </select>
+                <button onclick="addMonitor()">添加监控</button>
+            </div>
+        </section>
+
+        <section id="batchMonitorMode" class="input-section" style="display: none;">
+            <div class="input-group">
+                <textarea id="batchDomains" placeholder="每行输入一个域名"></textarea>
+                <div class="batch-settings">
+                    <select id="batchCheckInterval">
+                        <option value="5">每5分钟</option>
+                        <option value="15">每15分钟</option>
+                        <option value="30">每30分钟</option>
+                        <option value="60">每1小时</option>
+                        <option value="360">每6小时</option>
+                        <option value="720">每12小时</option>
+                        <option value="1440">每24小时</option>
+                    </select>
+                    <button onclick="addBatchMonitors()">批量添加</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="monitor-controls">
+            <div class="monitor-filter">
+                <input type="text" id="searchDomain" placeholder="搜索域名" onkeyup="filterMonitors()">
+                <select id="statusFilter" onchange="filterMonitors()">
+                    <option value="all">所有状态</option>
+                    <option value="safe">正常</option>
+                    <option value="unsafe">不安全</option>
+                    <option value="warning">警告</option>
+                    <option value="error">错误</option>
+                    <option value="pending">等待检查</option>
+                </select>
+            </div>
+            <div class="bulk-actions">
+                <button onclick="pauseAllMonitors()">暂停所有</button>
+                <button onclick="resumeAllMonitors()">恢复所有</button>
+                <button onclick="deleteAllMonitors()">删除所有</button>
+            </div>
+        </section>
+
+        <section class="monitor-list">
+            <div id="monitorItems"></div>
+        </section>
+
+        <section class="history-section">
+            <h2>监控历史</h2>
+            <div class="history-controls">
+                <input type="text" id="searchHistory" placeholder="搜索历史记录" onkeyup="filterHistory()">
+                <button onclick="clearHistory()">清空历史</button>
+            </div>
+            <div id="monitorHistory"></div>
+        </section>
+    </div>
+
+    <script src="monitor.js"></script>
+</body>
+</html> 
